@@ -4,7 +4,7 @@ import Layout from '@/layouts/Layout.astro';
 const features = [
   { icon: '🏗️', title: 'Static output', desc: 'Every page pre-rendered to plain HTML — zero server runtime required.' },
   { icon: '📦', title: 'outDir: ./build', desc: 'Build artefacts land in ./build instead of the default ./dist.' },
-  { icon: '🧵', title: 'Yarn package manager', desc: 'Managed with Yarn 4 (node-modules linker). Run yarn install to start.' },
+  { icon: '🧵', title: 'npm package manager', desc: 'Managed with npm. Run npm install to start.' },
   { icon: '💡', title: 'Client-side JS islands', desc: 'Inline scripts hydrate interactive components after the HTML loads.' },
 ];
 ---
@@ -15,7 +15,7 @@ const features = [
     <h1>Astro <span class="grad">CSR</span> Sample</h1>
     <p>
       A minimal multi-page Astro app with <strong>client-side rendering</strong>,
-      configured to build into <code>./build/</code> with <strong>Yarn</strong>.
+      configured to build into <code>./build/</code> with <strong>npm</strong>.
     </p>
     <div class="cta-row">
       <a href="/counter" class="btn primary">Try Counter →</a>
