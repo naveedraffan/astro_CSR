@@ -1,0 +1,100 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="Counter" description="Client-side counter demo">
+  <h1>Counter <span class="tag">CSR</span></h1>
+  <p class="sub">State lives entirely in the browser — no server involved.</p>
+
+  <div class="counter-card">
+    <div id="value" class="value">0</div>
+    <div class="controls">
+      <button id="dec" class="btn danger">− Decrement</button>
+      <button id="reset" class="btn muted">Reset</button>
+      <button id="inc" class="btn primary">+ Increment</button>
+    </div>
+    <div class="step-row">
+      <label for="step">Step size</label>
+      <input id="step" type="number" value="1" min="1" max="100" />
+    </div>
+    <div id="history" class="history"></div>
+  </div>
+</Layout>
+
+<script>
+  let count = 0;
+  const log: string[] = [];
+
+  const valueEl   = document.getElementById('value')!;
+  const historyEl = document.getElementById('history')!;
+  const stepInput = document.getElementById('step') as HTMLInputElement;
+
+  function step() { return Number(stepInput.value) || 1; }
+
+  function render() {
+    valueEl.textContent = String(count);
+    valueEl.className = 'value ' + (count > 0 ? 'pos' : count < 0 ? 'neg' : '');
+  }
+
+  function addLog(msg: string) {
+    log.unshift(`${new Date().toLocaleTimeString()} — ${msg}`);
+    if (log.length > 8) log.pop();
+    historyEl.innerHTML = log
+      .map(l => `<div class="log-entry">${l}</div>`)
+      .join('');
+  }
+
+  document.getElementById('inc')!.addEventListener('click', () => {
+    count += step(); addLog(`+${step()} → ${count}`); render();
+  });
+  document.getElementById('dec')!.addEventListener('click', () => {
+    count -= step(); addLog(`−${step()} → ${count}`); render();
+  });
+  document.getElementById('reset')!.addEventListener('click', () => {
+    count = 0; addLog('reset → 0'); render();
+  });
+</script>
+
+<style>
+  h1 { font-size: 2rem; font-weight: 800; margin-bottom: .4rem; }
+  .tag {
+    font-size: .65rem; vertical-align: middle; padding: .2em .55em; border-radius: 99px;
+    background: rgba(14,165,233,.15); color: var(--brand); border: 1px solid rgba(14,165,233,.3);
+  }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+
+  .counter-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 2rem; max-width: 420px;
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+
+  .value {
+    font-size: 5rem; font-weight: 900; text-align: center;
+    font-family: monospace; line-height: 1; color: var(--text);
+    transition: color .2s;
+  }
+  .value.pos { color: #34d399; }
+  .value.neg { color: #f87171; }
+
+  .controls { display: flex; gap: .6rem; }
+  .btn {
+    flex: 1; padding: .6rem; border-radius: 8px; border: 1px solid var(--border);
+    font-size: .875rem; font-weight: 600; cursor: pointer; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn.primary  { background: var(--brand);  color: #fff; border-color: var(--brand); }
+  .btn.danger   { background: #ef4444;        color: #fff; border-color: #ef4444; }
+  .btn.muted    { background: var(--surface); color: var(--muted); }
+
+  .step-row {
+    display: flex; align-items: center; gap: .75rem; font-size: .85rem; color: var(--muted);
+  }
+  input[type=number] {
+    width: 70px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); padding: .35rem .5rem; border-radius: 6px; font-size: .9rem;
+  }
+
+  .history { display: flex; flex-direction: column; gap: .3rem; min-height: 1rem; }
+  .log-entry { font-size: .75rem; color: var(--muted); font-family: monospace; }
+</style>

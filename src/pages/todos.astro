@@ -1,0 +1,162 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="Todos" description="Client-side todo list with localStorage persistence">
+  <h1>Todos <span class="tag">CSR + localStorage</span></h1>
+  <p class="sub">Todos persist across page reloads via <code>localStorage</code>.</p>
+
+  <div class="app">
+    <form id="add-form" class="add-row">
+      <input id="new-todo" type="text" placeholder="What needs doing?" autocomplete="off" />
+      <button type="submit" class="btn primary">Add</button>
+    </form>
+
+    <div class="toolbar">
+      <div class="filters">
+        <button class="filter active" data-filter="all">All</button>
+        <button class="filter" data-filter="active">Active</button>
+        <button class="filter" data-filter="done">Done</button>
+      </div>
+      <button id="clear-done" class="btn sm">Clear done</button>
+    </div>
+
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="empty" hidden>Nothing here yet — add a task above!</p>
+    <p id="count" class="count"></p>
+  </div>
+</Layout>
+
+<script>
+  interface Todo { id: number; text: string; done: boolean; }
+
+  const STORAGE_KEY = 'astro-csr-todos';
+  let todos: Todo[] = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+  let filter: 'all' | 'active' | 'done' = 'all';
+
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(todos)); }
+
+  function visible() {
+    if (filter === 'active') return todos.filter(t => !t.done);
+    if (filter === 'done')   return todos.filter(t =>  t.done);
+    return todos;
+  }
+
+  function render() {
+    const list  = document.getElementById('list')!;
+    const empty = document.getElementById('empty')!;
+    const count = document.getElementById('count')!;
+    const items = visible();
+
+    list.innerHTML = items.map(todo => `
+      <li class="todo-item ${todo.done ? 'done' : ''}" data-id="${todo.id}">
+        <button class="check" data-action="toggle" title="Toggle">
+          ${todo.done ? '✅' : '⬜'}
+        </button>
+        <span class="text">${todo.text}</span>
+        <button class="del" data-action="delete" title="Delete">✕</button>
+      </li>
+    `).join('');
+
+    empty.hidden = items.length > 0;
+    const remaining = todos.filter(t => !t.done).length;
+    count.textContent = todos.length
+      ? `${remaining} of ${todos.length} remaining`
+      : '';
+  }
+
+  // Add
+  document.getElementById('add-form')!.addEventListener('submit', e => {
+    e.preventDefault();
+    const input = document.getElementById('new-todo') as HTMLInputElement;
+    const text = input.value.trim();
+    if (!text) return;
+    todos.push({ id: Date.now(), text, done: false });
+    input.value = '';
+    save(); render();
+  });
+
+  // Toggle / Delete (event delegation)
+  document.getElementById('list')!.addEventListener('click', e => {
+    const btn = (e.target as Element).closest('[data-action]') as HTMLElement | null;
+    if (!btn) return;
+    const id = Number((btn.closest('[data-id]') as HTMLElement).dataset.id);
+    if (btn.dataset.action === 'toggle') {
+      todos = todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
+    } else {
+      todos = todos.filter(t => t.id !== id);
+    }
+    save(); render();
+  });
+
+  // Filters
+  document.querySelectorAll('.filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filter = (btn as HTMLElement).dataset.filter as typeof filter;
+      document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+
+  // Clear done
+  document.getElementById('clear-done')!.addEventListener('click', () => {
+    todos = todos.filter(t => !t.done);
+    save(); render();
+  });
+
+  render();
+</script>
+
+<style>
+  h1 { font-size: 2rem; font-weight: 800; margin-bottom: .4rem; }
+  .tag {
+    font-size: .6rem; vertical-align: middle; padding: .2em .55em; border-radius: 99px;
+    background: rgba(99,102,241,.15); color: #818cf8; border: 1px solid rgba(99,102,241,.3);
+  }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+  .sub code { background: var(--surface); padding: .1em .35em; border-radius: 4px; font-size: .85em; }
+
+  .app { max-width: 480px; display: flex; flex-direction: column; gap: .75rem; }
+
+  .add-row { display: flex; gap: .5rem; }
+  input[type=text] {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: .55rem .75rem; border-radius: 8px; font-size: .9rem;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--brand); }
+
+  .btn {
+    padding: .55rem 1rem; border-radius: 8px; border: 1px solid var(--border);
+    font-size: .875rem; font-weight: 600; cursor: pointer; color: var(--text);
+    background: var(--surface);
+  }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.sm { font-size: .75rem; padding: .3rem .7rem; }
+
+  .toolbar { display: flex; align-items: center; justify-content: space-between; }
+  .filters { display: flex; gap: .25rem; }
+  .filter {
+    background: none; border: 1px solid transparent; color: var(--muted);
+    padding: .25rem .65rem; border-radius: 6px; font-size: .8rem; cursor: pointer;
+  }
+  .filter.active { color: var(--brand); border-color: rgba(14,165,233,.4); background: rgba(14,165,233,.08); }
+
+  .list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+  .todo-item {
+    display: flex; align-items: center; gap: .6rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: .6rem .75rem;
+  }
+  .todo-item.done .text { text-decoration: line-through; color: var(--muted); }
+  .check, .del {
+    background: none; border: none; cursor: pointer; font-size: 1rem;
+    padding: 0; line-height: 1; flex-shrink: 0;
+  }
+  .del { margin-left: auto; color: var(--muted); font-size: .8rem; }
+  .del:hover { color: #f87171; }
+  .text { flex: 1; font-size: .9rem; }
+
+  .empty { color: var(--muted); font-size: .875rem; text-align: center; padding: 1.5rem 0; }
+  .count { font-size: .78rem; color: var(--muted); text-align: right; }
+</style>

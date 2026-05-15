@@ -1,0 +1,102 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'Astro CSR sample app' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} · Astro CSR</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --brand:   #0ea5e9;
+        --brand2:  #6366f1;
+        --bg:      #0c0c10;
+        --surface: #16161e;
+        --border:  #2a2a3a;
+        --text:    #e0e0f0;
+        --muted:   #777;
+        font-family: system-ui, -apple-system, sans-serif;
+        color-scheme: dark;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── Nav ── */
+      header {
+        position: sticky; top: 0; z-index: 10;
+        border-bottom: 1px solid var(--border);
+        background: rgba(12,12,16,.85);
+        backdrop-filter: blur(10px);
+        padding: .85rem 2rem;
+        display: flex; align-items: center; justify-content: space-between;
+      }
+      .logo { font-weight: 800; font-size: 1rem; color: var(--brand); text-decoration: none; }
+      nav { display: flex; gap: .25rem; }
+      nav a {
+        color: var(--muted); text-decoration: none;
+        padding: .35rem .75rem; border-radius: 6px; font-size: .875rem;
+        transition: color .15s, background .15s;
+      }
+      nav a:hover { color: var(--text); background: var(--surface); }
+      nav a.active { color: var(--brand); background: rgba(14,165,233,.1); }
+
+      /* ── Main ── */
+      main { flex: 1; padding: 2.5rem 2rem; max-width: 900px; width: 100%; margin: 0 auto; }
+
+      /* ── Footer ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 1rem 2rem; text-align: center;
+        font-size: .78rem; color: var(--muted);
+      }
+      footer a { color: var(--brand); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="logo" href="/">⚡ Astro CSR</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/counter">Counter</a>
+        <a href="/todos">Todos</a>
+        <a href="/gallery">Gallery</a>
+        <a href="/about">About</a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      Built with <a href="https://astro.build">Astro</a> ·
+      output: <code>static</code> · outDir: <code>./build</code>
+    </footer>
+
+    <!-- Mark active nav link via client-side JS -->
+    <script>
+      const links = document.querySelectorAll('nav a');
+      links.forEach(link => {
+        if (link.getAttribute('href') === location.pathname) {
+          link.classList.add('active');
+        }
+      });
+    </script>
+  </body>
+</html>

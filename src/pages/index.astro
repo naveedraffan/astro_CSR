@@ -1,0 +1,94 @@
+---
+import Layout from '@/layouts/Layout.astro';
+
+const features = [
+  { icon: '🏗️', title: 'Static output', desc: 'Every page pre-rendered to plain HTML — zero server runtime required.' },
+  { icon: '📦', title: 'outDir: ./build', desc: 'Build artefacts land in ./build instead of the default ./dist.' },
+  { icon: '🧵', title: 'Yarn package manager', desc: 'Managed with Yarn 4 (node-modules linker). Run yarn install to start.' },
+  { icon: '💡', title: 'Client-side JS islands', desc: 'Inline scripts hydrate interactive components after the HTML loads.' },
+];
+---
+
+<Layout title="Home">
+  <section class="hero">
+    <div class="badge">output: static · outDir: ./build</div>
+    <h1>Astro <span class="grad">CSR</span> Sample</h1>
+    <p>
+      A minimal multi-page Astro app with <strong>client-side rendering</strong>,
+      configured to build into <code>./build/</code> with <strong>Yarn</strong>.
+    </p>
+    <div class="cta-row">
+      <a href="/counter" class="btn primary">Try Counter →</a>
+      <a href="/todos" class="btn">Try Todos →</a>
+    </div>
+  </section>
+
+  <div class="grid">
+    {features.map(f => (
+      <div class="card">
+        <span class="icon">{f.icon}</span>
+        <h2>{f.title}</h2>
+        <p set:html={f.desc} />
+      </div>
+    ))}
+  </div>
+
+  <!-- Live clock — purely client-side -->
+  <div class="clock-wrap">
+    <span class="label">Client clock (CSR)</span>
+    <span id="clock" class="clock">--:--:--</span>
+  </div>
+
+  <script>
+    function tick() {
+      const el = document.getElementById('clock');
+      if (el) el.textContent = new Date().toLocaleTimeString();
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</Layout>
+
+<style>
+  .hero { text-align: center; padding: 3rem 0 2.5rem; }
+  .badge {
+    display: inline-block; margin-bottom: 1rem;
+    background: rgba(14,165,233,.12); border: 1px solid rgba(14,165,233,.3);
+    color: var(--brand); font-size: .75rem; padding: .3em .9em; border-radius: 99px;
+    font-family: monospace;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; letter-spacing: -.04em; margin-bottom: .75rem; }
+  .grad { background: linear-gradient(135deg, var(--brand), var(--brand2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); max-width: 480px; margin: 0 auto 1.75rem; line-height: 1.7; }
+  .hero code { background: var(--surface); padding: .1em .35em; border-radius: 4px; font-size: .9em; color: var(--brand); }
+
+  .cta-row { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .55rem 1.25rem; border-radius: 8px; font-size: .9rem; font-weight: 600;
+    text-decoration: none; border: 1px solid var(--border); color: var(--text);
+    transition: border-color .15s, background .15s;
+  }
+  .btn:hover { border-color: var(--brand); background: rgba(14,165,233,.08); }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.primary:hover { background: #38bdf8; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.25rem; display: flex; flex-direction: column; gap: .4rem;
+  }
+  .icon { font-size: 1.5rem; }
+  .card h2 { font-size: .9rem; font-weight: 700; }
+  .card p { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+
+  .clock-wrap {
+    display: flex; align-items: center; gap: 1rem; justify-content: center;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem 1.5rem; margin-top: .5rem;
+  }
+  .label { font-size: .78rem; color: var(--muted); }
+  .clock { font-size: 1.6rem; font-family: monospace; font-weight: 700; color: var(--brand); }
+</style>

@@ -1,0 +1,129 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="Gallery" description="Client-side filtered image gallery">
+  <h1>Gallery <span class="tag">CSR filtering</span></h1>
+  <p class="sub">Filter and search happen entirely client-side — no page reload.</p>
+
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Search…" />
+    <div class="cats" id="cats">
+      <button class="cat active" data-cat="all">All</button>
+      <button class="cat" data-cat="nature">Nature</button>
+      <button class="cat" data-cat="city">City</button>
+      <button class="cat" data-cat="abstract">Abstract</button>
+    </div>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <p id="no-results" class="empty" hidden>No items match your filter.</p>
+</Layout>
+
+<script>
+  interface Item { id: number; title: string; cat: string; color: string; emoji: string; }
+
+  const items: Item[] = [
+    { id: 1,  title: 'Mountain Sunrise',   cat: 'nature',   color: '#164e63', emoji: '🏔️' },
+    { id: 2,  title: 'Ocean Wave',          cat: 'nature',   color: '#0c4a6e', emoji: '🌊' },
+    { id: 3,  title: 'Forest Path',         cat: 'nature',   color: '#14532d', emoji: '🌲' },
+    { id: 4,  title: 'Desert Dune',         cat: 'nature',   color: '#78350f', emoji: '🏜️' },
+    { id: 5,  title: 'City Skyline',        cat: 'city',     color: '#1e1b4b', emoji: '🌆' },
+    { id: 6,  title: 'Night Market',        cat: 'city',     color: '#3b0764', emoji: '🏮' },
+    { id: 7,  title: 'Rainy Street',        cat: 'city',     color: '#1e293b', emoji: '🌧️' },
+    { id: 8,  title: 'Bridge at Dusk',      cat: 'city',     color: '#27272a', emoji: '🌉' },
+    { id: 9,  title: 'Geometric Swirl',     cat: 'abstract', color: '#4c1d95', emoji: '🌀' },
+    { id: 10, title: 'Color Burst',         cat: 'abstract', color: '#7c2d12', emoji: '🎆' },
+    { id: 11, title: 'Neon Grid',           cat: 'abstract', color: '#042f2e', emoji: '🔷' },
+    { id: 12, title: 'Fractal Bloom',       cat: 'abstract', color: '#0f172a', emoji: '🌸' },
+  ];
+
+  let activeCat = 'all';
+  let query     = '';
+
+  function filtered() {
+    return items.filter(item => {
+      const matchCat = activeCat === 'all' || item.cat === activeCat;
+      const matchQ   = item.title.toLowerCase().includes(query.toLowerCase());
+      return matchCat && matchQ;
+    });
+  }
+
+  function render() {
+    const grid = document.getElementById('grid')!;
+    const none = document.getElementById('no-results')!;
+    const list = filtered();
+    none.hidden = list.length > 0;
+    grid.innerHTML = list.map(item => `
+      <div class="card" style="background:${item.color}">
+        <div class="thumb">${item.emoji}</div>
+        <div class="info">
+          <span class="title">${item.title}</span>
+          <span class="cat-label">${item.cat}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('search')!.addEventListener('input', e => {
+    query = (e.target as HTMLInputElement).value;
+    render();
+  });
+
+  document.getElementById('cats')!.addEventListener('click', e => {
+    const btn = (e.target as Element).closest('[data-cat]') as HTMLElement | null;
+    if (!btn) return;
+    activeCat = btn.dataset.cat!;
+    document.querySelectorAll('.cat').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+
+  render();
+</script>
+
+<style>
+  h1 { font-size: 2rem; font-weight: 800; margin-bottom: .4rem; }
+  .tag {
+    font-size: .6rem; vertical-align: middle; padding: .2em .55em; border-radius: 99px;
+    background: rgba(99,102,241,.15); color: #818cf8; border: 1px solid rgba(99,102,241,.3);
+  }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+
+  .toolbar { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  input[type=search] {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: .5rem .8rem; border-radius: 8px; font-size: .875rem; width: 200px;
+  }
+  input[type=search]:focus { outline: none; border-color: var(--brand); }
+
+  .cats { display: flex; gap: .3rem; }
+  .cat {
+    background: none; border: 1px solid transparent; color: var(--muted);
+    padding: .3rem .75rem; border-radius: 6px; font-size: .8rem; cursor: pointer;
+  }
+  .cat.active { color: var(--brand); border-color: rgba(14,165,233,.4); background: rgba(14,165,233,.08); }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+    display: flex; flex-direction: column; cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  .thumb {
+    height: 130px; display: flex; align-items: center; justify-content: center;
+    font-size: 3rem;
+  }
+  .info {
+    background: rgba(0,0,0,.35); padding: .6rem .75rem;
+    display: flex; flex-direction: column; gap: .15rem;
+  }
+  .title { font-size: .85rem; font-weight: 600; color: #fff; }
+  .cat-label { font-size: .7rem; color: rgba(255,255,255,.55); text-transform: capitalize; }
+
+  .empty { color: var(--muted); text-align: center; padding: 2rem 0; }
+</style>
