@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "start": "astro build",
-    "preview": "astro preview",
+    "start": "node ./scripts/start-preview.mjs",
+    "preview": "astro preview --host",
     "astro": "astro"
   },
   "dependencies": {
